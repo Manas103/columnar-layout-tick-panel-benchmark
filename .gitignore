@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+pytest_run.log
+
+# Regenerate with: python scripts/generate_data.py
+# (writes data/layouts/, the 1.2B-row panel in 4 layouts, tens of GB)
+data/layouts/
+build_log.txt

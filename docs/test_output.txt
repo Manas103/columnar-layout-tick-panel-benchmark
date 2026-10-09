@@ -1,0 +1,22 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Manas\Downloads\Auto Job Applier\Total Job Application process flow\projects\columnar-layout-tick-panel-benchmark\venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Manas\Downloads\Auto Job Applier\Total Job Application process flow
+configfile: pytest.ini
+collecting ... collected 13 items
+
+tests\test_benchmark_harness.py::test_run_duckdb_once_reports_positive_time_and_bytes PASSED [  7%]
+tests\test_benchmark_harness.py::test_daily_sorted_scans_fewer_bytes_than_none_unsorted_on_this_fixture PASSED [ 15%]
+tests\test_benchmark_harness.py::test_polars_streaming_matches_duckdb_on_every_layout PASSED [ 23%]
+tests\test_layouts_and_query.py::test_all_4_layouts_have_the_same_row_count PASSED [ 30%]
+tests\test_layouts_and_query.py::test_all_4_layouts_have_the_same_per_instrument_sum PASSED [ 38%]
+tests\test_layouts_and_query.py::test_daily_sorted_layout_is_actually_sorted_by_instrument_within_each_day PASSED [ 46%]
+tests\test_layouts_and_query.py::test_the_query_returns_the_same_result_from_every_layout PASSED [ 53%]
+tests\test_simulate.py::test_one_day_has_the_declared_row_count PASSED   [ 61%]
+tests\test_simulate.py::test_deterministic_by_day_index PASSED           [ 69%]
+tests\test_simulate.py::test_different_days_differ PASSED                [ 76%]
+tests\test_simulate.py::test_every_instrument_present_every_day PASSED   [ 84%]
+tests\test_simulate.py::test_timestamps_stay_within_trading_hours PASSED [ 92%]
+tests\test_simulate.py::test_prices_are_positive PASSED                  [100%]
+
+======================== 13 passed in 85.40s (0:01:25) ========================

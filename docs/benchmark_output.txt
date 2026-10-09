@@ -1,0 +1,115 @@
+=== query definition ===
+{
+  "instrument_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "date_range": [
+    "2024-02-01",
+    "2024-02-03"
+  ],
+  "side_filter": 1
+}
+
+=== scale ===
+{
+  "value": true,
+  "row_counts_by_layout": {
+    "none_unsorted": 1200000000,
+    "monthly_unsorted": 1200000000,
+    "daily_unsorted": 1200000000,
+    "daily_sorted": 1200000000
+  },
+  "expected_total_rows": 1200000000
+}
+
+=== query_benchmark ===
+{
+  "value": {
+    "median_query_time_speedup_x": 9.02,
+    "scan_footprint_cut_pct": 86.7
+  },
+  "baseline_layout": "none_unsorted",
+  "best_layout": "daily_sorted",
+  "repeats": 5,
+  "by_layout": {
+    "none_unsorted": {
+      "median_seconds": 0.5963047000113875,
+      "min_seconds": 0.5635510999709368,
+      "max_seconds": 2.145954699954018,
+      "median_bytes_read": 3878852,
+      "layout_total_bytes": 14975626376,
+      "scan_footprint_fraction": 0.00025901100245237583,
+      "rows_returned": 30
+    },
+    "monthly_unsorted": {
+      "median_seconds": 0.6146300000837073,
+      "min_seconds": 0.5687925999518484,
+      "max_seconds": 2.043309499975294,
+      "median_bytes_read": 3880114,
+      "layout_total_bytes": 14975627646,
+      "scan_footprint_fraction": 0.0002590952507447246,
+      "rows_returned": 30
+    },
+    "daily_unsorted": {
+      "median_seconds": 0.29991249996237457,
+      "min_seconds": 0.29725219996180385,
+      "max_seconds": 1.9884293000213802,
+      "median_bytes_read": 4253700,
+      "layout_total_bytes": 15426005850,
+      "scan_footprint_fraction": 0.0002757486313283098,
+      "rows_returned": 30
+    },
+    "daily_sorted": {
+      "median_seconds": 0.06610729999374598,
+      "min_seconds": 0.0516237000701949,
+      "max_seconds": 0.14266539993695915,
+      "median_bytes_read": 514028,
+      "layout_total_bytes": 15318632243,
+      "scan_footprint_fraction": 3.355573734299223e-05,
+      "rows_returned": 30
+    }
+  }
+}
+
+=== polars_streaming_agreement ===
+{
+  "value": true,
+  "all_layouts_within_2pct": true,
+  "all_layouts_under_4gb_ceiling": true,
+  "max_peak_rss_gb_across_layouts": 0.878,
+  "by_layout": {
+    "none_unsorted": {
+      "max_relative_difference": 5.3072198700058157e-08,
+      "within_2pct": true,
+      "polars_seconds": 0.8690562000265345,
+      "polars_peak_rss_gb": 0.761260986328125
+    },
+    "monthly_unsorted": {
+      "max_relative_difference": 5.3072198700058157e-08,
+      "within_2pct": true,
+      "polars_seconds": 0.7549612999428064,
+      "polars_peak_rss_gb": 0.8784370422363281
+    },
+    "daily_unsorted": {
+      "max_relative_difference": 5.3072198700058157e-08,
+      "within_2pct": true,
+      "polars_seconds": 0.21081770001910627,
+      "polars_peak_rss_gb": 0.8179054260253906
+    },
+    "daily_sorted": {
+      "max_relative_difference": 5.3072198700058157e-08,
+      "within_2pct": true,
+      "polars_seconds": 0.050874399952590466,
+      "polars_peak_rss_gb": 0.696624755859375
+    }
+  }
+}
