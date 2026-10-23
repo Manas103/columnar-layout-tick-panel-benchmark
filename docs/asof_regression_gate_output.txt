@@ -1,0 +1,14 @@
+Computed 30 analytic outputs (10 instruments x 3 days) from the unsorted layout.
+Pinned snapshot already exists at C:\Users\Manas\Downloads\Auto Job Applier\Total Job Application process flow\projects\columnar-layout-tick-panel-benchmark\tickpanel\regression\pinned_asof_outputs.json; not overwriting.
+Unsorted layout vs. pin (sanity check): 0 mismatches of 30 pinned outputs, all_identical=True
+
+=== Regression Gate: unsorted -> daily-sorted-by-instrument ===
+Pinned analytic outputs: 30
+Outputs recomputed after the storage re-layout: 30
+Mismatches: 0
+Every pinned result stayed identical: True
+
+Sample pinned rows (first 3 of 30):
+  {'instrument_id': 0, 'day': '2024-06-05', 'n_trades': 5000, 'avg_slippage': -3.3492751989260226e-05, 'avg_prevailing_spread': 0.06017733820699976}
+  {'instrument_id': 0, 'day': '2024-06-06', 'n_trades': 5000, 'avg_slippage': -0.004470798827508796, 'avg_prevailing_spread': 0.05982478866451049}
+  {'instrument_id': 0, 'day': '2024-06-07', 'n_trades': 5000, 'avg_slippage': 0.008276815377839227, 'avg_prevailing_spread': 0.059892380027321585}

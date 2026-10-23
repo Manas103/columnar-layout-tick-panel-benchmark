@@ -1,0 +1,212 @@
+[
+  {
+    "avg_prevailing_spread": 0.060177338206999754,
+    "avg_slippage": -3.3492751989260226e-05,
+    "day": "2024-06-05",
+    "instrument_id": 0,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.05982478866451049,
+    "avg_slippage": -0.004470798827508796,
+    "day": "2024-06-06",
+    "instrument_id": 0,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.05989238002732181,
+    "avg_slippage": 0.008276815377839227,
+    "day": "2024-06-07",
+    "instrument_id": 0,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.060861761087504705,
+    "avg_slippage": -0.0025695347843515096,
+    "day": "2024-06-05",
+    "instrument_id": 1,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.06028519384944403,
+    "avg_slippage": 0.0005119168012151341,
+    "day": "2024-06-06",
+    "instrument_id": 1,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.06077771162893063,
+    "avg_slippage": -0.00021281358371242617,
+    "day": "2024-06-07",
+    "instrument_id": 1,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.06024636864117257,
+    "avg_slippage": -0.00021385899119951262,
+    "day": "2024-06-05",
+    "instrument_id": 2,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.0594286324075615,
+    "avg_slippage": -0.0006915502362318542,
+    "day": "2024-06-06",
+    "instrument_id": 2,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.05934262542915601,
+    "avg_slippage": -0.0005502292999167601,
+    "day": "2024-06-07",
+    "instrument_id": 2,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.05987590373558585,
+    "avg_slippage": -3.246393491825756e-05,
+    "day": "2024-06-05",
+    "instrument_id": 3,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.060629465430206,
+    "avg_slippage": 0.00036773212024109796,
+    "day": "2024-06-06",
+    "instrument_id": 3,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.059696703798096065,
+    "avg_slippage": 0.00038382832688429574,
+    "day": "2024-06-07",
+    "instrument_id": 3,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.06079867746753919,
+    "avg_slippage": 0.0009631627623316106,
+    "day": "2024-06-05",
+    "instrument_id": 4,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.059987614667862066,
+    "avg_slippage": 0.0014578931296179462,
+    "day": "2024-06-06",
+    "instrument_id": 4,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.05935653401240422,
+    "avg_slippage": -0.0006008556372115322,
+    "day": "2024-06-07",
+    "instrument_id": 4,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.06031713515541279,
+    "avg_slippage": -0.0012135630622238807,
+    "day": "2024-06-05",
+    "instrument_id": 5,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.060243829625535046,
+    "avg_slippage": -0.0003614024143630061,
+    "day": "2024-06-06",
+    "instrument_id": 5,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.05966352871477489,
+    "avg_slippage": 0.00040113272803008897,
+    "day": "2024-06-07",
+    "instrument_id": 5,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.06085323628240258,
+    "avg_slippage": 0.005292119492467762,
+    "day": "2024-06-05",
+    "instrument_id": 6,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.06019168081445215,
+    "avg_slippage": -0.00040083677299903827,
+    "day": "2024-06-06",
+    "instrument_id": 6,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.059605152191636146,
+    "avg_slippage": 0.0019052291077099426,
+    "day": "2024-06-07",
+    "instrument_id": 6,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.06002156928042649,
+    "avg_slippage": 0.00013232123656543778,
+    "day": "2024-06-05",
+    "instrument_id": 7,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.05954890484582161,
+    "avg_slippage": 0.0003617185373128819,
+    "day": "2024-06-06",
+    "instrument_id": 7,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.05994355514921515,
+    "avg_slippage": 0.0008522619077268658,
+    "day": "2024-06-07",
+    "instrument_id": 7,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.05959607785831172,
+    "avg_slippage": 0.00043877666717532973,
+    "day": "2024-06-05",
+    "instrument_id": 8,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.06061014567708767,
+    "avg_slippage": 0.0008849617274969603,
+    "day": "2024-06-06",
+    "instrument_id": 8,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.061076630512509396,
+    "avg_slippage": 0.0005301576958724098,
+    "day": "2024-06-07",
+    "instrument_id": 8,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.060644160491986225,
+    "avg_slippage": 4.052897498318089e-05,
+    "day": "2024-06-05",
+    "instrument_id": 9,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.05967368376112934,
+    "avg_slippage": -0.0030795090827300167,
+    "day": "2024-06-06",
+    "instrument_id": 9,
+    "n_trades": 5000
+  },
+  {
+    "avg_prevailing_spread": 0.059594881295986064,
+    "avg_slippage": -0.0019487817138196817,
+    "day": "2024-06-07",
+    "instrument_id": 9,
+    "n_trades": 5000
+  }
+]

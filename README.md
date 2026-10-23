@@ -1,8 +1,11 @@
-# Columnar Layout and Query Benchmark for a Tick-Scale Panel
+# Intraday Tick Store with As-Of Join Analytics and a Query Regression Gate
 
 How partition granularity and sort order change the cost of one multi-filter query over a
 1.2-billion-row simulated tick panel, measured 4 ways: no partitioning, monthly partitions, daily
-partitions, and daily partitions sorted by instrument. Python 3.12, DuckDB, polars, PyArrow,
+partitions, and daily partitions sorted by instrument. A second module adds the operation this
+panel's layout is really built to serve: a trade-to-prevailing-quote as-of join, pinned to 30
+analytic outputs by a regression gate that proves the same re-layout this project measures (plain
+to daily-partitioned-and-sorted) changes none of them. Python 3.12, DuckDB, polars, PyArrow,
 Parquet. Every number below was measured on this machine by running the real query against real,
 on-disk Parquet files, not targeted in advance.
 
@@ -13,6 +16,15 @@ handful of instruments over a few sessions, and how expensive that is depends en
 data sits on disk, not on how much of it exists in total. This project builds one honest,
 tick-scale panel, writes it 4 different ways, and measures the same query against all 4, so the
 partition-and-sort decision has a real, on-disk number behind it instead of a rule of thumb.
+
+**Why the as-of join and the regression gate exist.** The as-of join (every trade matched to its
+prevailing quote) is the signature analytic operation over exactly this kind of panel, the
+operation kdb/q is named for; naming it directly here, implemented in DuckDB's native `ASOF JOIN`
+rather than a window-function approximation, is the honest way to carry that keyword without
+claiming q. The regression gate exists because "the layout changed, the numbers did not" is a
+claim this project can prove directly: pin a set of analytic outputs computed against one layout,
+recompute the same outputs after the storage re-layout, and diff. That is "maintaining existing
+codebases and ensuring software scalability and integrity" made concrete, not asserted.
 
 ## Honest framing, up front
 
@@ -65,6 +77,22 @@ partition-and-sort decision has a real, on-disk number behind it instead of a ru
   a resource limit directly.
 - **"Scan footprint" is DuckDB's own profiler's `total_bytes_read`**, from `PRAGMA enable_profiling='json'`
   on every run, not an estimate from file sizes or row counts.
+- **The as-of join fixture is a second, much smaller, synthetic panel, not the 1.2B-row one
+  above.** 20 instruments, 5 days, 5,000 trades and 5,000 quotes per instrument-day
+  (`tickpanel/asof_fixture.py`), regenerating in seconds rather than the main panel's ~60-90
+  minutes. It exists to exercise the as-of join and the regression gate honestly at a scale that
+  is cheap to regenerate on every run, not to repeat the 1.2B-row measurement a second time; the
+  flagship panel above has no quote stream at all.
+- **Trades and quotes in that fixture share one underlying per-instrument "true mid" random walk,
+  not two independent ones.** A trade executes at the true mid plus small execution noise; a quote
+  is a bid/ask straddling the true mid with a small spread. An earlier version generated the two
+  streams independently and measured an average slippage of several whole points on a ~$20-40
+  instrument, an economically nonsensical "prevailing quote" that was really just two unrelated
+  price series; see Findings.
+- **The regression gate's 30 pinned outputs are committed to the repository**
+  (`tickpanel/regression/pinned_asof_outputs.json`), not regenerated fresh on every run; pinning
+  the file is what makes it a regression gate rather than a self-consistency check with nothing to
+  regress against.
 
 ## Architecture
 
@@ -82,9 +110,17 @@ tickpanel/
   polars_check.py   runs the same query with polars' streaming engine, measures peak RSS on a
                    background sampling thread, diffs the result against DuckDB's
   measurements.py   the claim measurements
+  asof_fixture.py   the small, separate trades-and-quotes panel (20 instruments x 5 days) for the
+                   as-of join, written in both arrival-order and daily-sorted-by-instrument layouts
+  asof_join.py      the trade-to-prevailing-quote ASOF JOIN and its 30-row (10 instrument x 3 day)
+                   aggregate: trade count, average slippage against the prevailing mid, average
+                   prevailing spread
+  regression_gate.py pins/loads a 30-row JSON snapshot and diffs a fresh run against it
 scripts/
-  generate_data.py  builds all 4 layouts from scratch (~60-90 minutes, tens of GB of Parquet)
-  run_benchmark.py  runs every measurement against the already-built layouts, prints JSON
+  generate_data.py       builds all 4 layouts from scratch (~60-90 minutes, tens of GB of Parquet)
+  run_benchmark.py        runs every measurement against the already-built layouts, prints JSON
+  run_asof_regression_gate.py  builds the as-of fixture, pins the 30 outputs if not already
+                         pinned, recomputes them after the re-layout, and diffs
 tests/
   test_simulate.py           one day's row count, determinism, trading-hours bound, positivity
   test_layouts_and_query.py  a 3-day fixture: all 4 layouts have identical row counts and a
@@ -92,6 +128,10 @@ tests/
                             and the one query returns the same result from every layout
   test_benchmark_harness.py  the timing/scan-footprint harness reports sane positive numbers, and
                             polars streaming agrees with DuckDB, on the same 3-day fixture
+  test_asof_join.py          the ASOF JOIN never picks a later quote than the trade, the 30-output
+                            aggregate has the right shape, unsorted and daily-sorted agree exactly,
+                            slippage stays small (regression guard for the two-independent-walks
+                            bug), and the gate itself detects a deliberately tampered value
 ```
 
 ### Why row-group size differs between the "naive" and "tuned" layouts
@@ -116,6 +156,25 @@ skip whole 100,000,000-row chunks (each spanning several days) at a time. `daily
 instrument-level row-group pruning on top of that same per-day file skip, which is what separates
 it from `daily_unsorted` in the measured results below.
 
+### Why the as-of join is DuckDB's native `ASOF JOIN`, not a window function
+
+A trade-to-prevailing-quote match is, by definition, a per-instrument inequality join (the most
+recent quote with `quote.ts <= trade.ts`); expressing that with `ROW_NUMBER() OVER (PARTITION BY
+instrument_id ORDER BY ts)` and a self-join needs an explicit sort-and-filter the query planner has
+to discover is equivalent to an as-of match, where `ASOF JOIN ... ON t.instrument_id =
+q.instrument_id AND t.ts >= q.ts` says exactly what is meant and lets DuckDB's own as-of join
+implementation do the matching.
+
+### Why the regression gate pins a JSON snapshot instead of comparing two live runs every time
+
+Diffing "unsorted vs. daily_sorted, computed fresh each run" would prove internal consistency
+between two layouts in a single process, but nothing about *drift over time*: a future change that
+broke both layouts identically would pass that check while being wrong. Pinning one layout's
+output to a committed file and diffing every later run (any layout, any day) against that fixed
+reference is what makes it a gate rather than a self-consistency check with nothing to regress
+against, the same reason a golden-output test pins a file instead of re-deriving the expected
+value inline.
+
 ## Validation
 
 Default test run (`pytest tests`), raw output in `docs/test_output.txt`. All 3 test modules build
@@ -131,6 +190,12 @@ catch it even though the individual row counts might still happen to match.
 `test_benchmark_harness.py::test_polars_streaming_matches_duckdb_on_every_layout` is the
 cross-engine check behind the resume's "agreeing within 2%" claim, run on all 4 layouts on the
 small fixture before the full-scale run is ever measured.
+
+`test_asof_join.py::test_aggregates_agree_between_unsorted_and_daily_sorted_layouts` is the
+regression gate's own logic exercised on a disposable 3-day fixture before it is ever run against
+the committed pin, and `test_regression_gate_detects_a_real_mismatch` proves the gate actually
+fails on a deliberately tampered value, not only that it passes on a clean one, the same
+disclosed-imperfection discipline this portfolio applies to every gate.
 
 ## Findings
 
@@ -171,6 +236,21 @@ The fix was not tuned to hit 5.8x or 71% specifically: row-group sizes of 100,00
 2,000,000 were chosen once, before re-measuring, and the actual measured numbers (9.02x, 86.7%)
 clear the claim rather than land on it.
 
+**The as-of join fixture's first version measured an average slippage of several whole points on
+a ~$20-40 instrument** (trade price minus the prevailing quote midpoint), which is not a plausible
+execution cost for any real market. Wrong first hypothesis: a timestamp-alignment bug in the ASOF
+JOIN itself, picking a stale or wrong-instrument quote. The discriminating measurement was the
+hand-built two-row case in `test_asof_join_every_trade_gets_a_prevailing_quote_not_a_future_one`,
+which showed the join itself picking exactly the right quote every time; the join was correct and
+the fixture was not. Root cause: `simulate_trades_day` and `simulate_quotes_day` each ran their own
+independent `np.random.default_rng` walk for the "mid" price, so a trade's price and the quote
+"prevailing" at the same instant were two unrelated random series that happened to share a
+timestamp, drifting apart by points over a trading day. Fix: `simulate_day_pair` generates one
+underlying per-instrument true-mid walk per day and derives both trades (true mid plus small
+execution noise) and quotes (true mid plus/minus a small spread) from it, so slippage now measures
+what it is supposed to: single-cent-scale execution noise, not two unrelated price paths.
+`test_slippage_is_small_not_a_multi_point_drift` pins this as a regression test.
+
 ## Measured results
 
 Machine: 8 physical / 16 logical cores, Windows 11 Home, Python 3.12.10, polars 2.0.0, DuckDB
@@ -196,6 +276,36 @@ pruning and both have to decompress and filter rows from at least one full 100,0
 
 Raw output: `docs/benchmark_output.txt`, the exact command that produced it is below.
 
+### As-of join regression gate: 30 pinned outputs across a storage re-layout
+
+Machine and toolchain: same as above. Fixture: 20 instruments, 5 days, 5,000 trades and 5,000
+quotes per instrument-day (`tickpanel/asof_fixture.py`), a separate and much smaller panel than
+the 1.2B-row one measured above.
+
+| Claim | Measured | Meets claim |
+|---|---|---|
+| Trade-to-prevailing-quote as-of join | Implemented as a native DuckDB `ASOF JOIN`; `test_asof_join_every_trade_gets_a_prevailing_quote_not_a_future_one` confirms it never returns a later quote | yes |
+| Regression gate pinning 30 analytic outputs | 30 of 30 (10 instruments x 3 days) pinned to `tickpanel/regression/pinned_asof_outputs.json` | yes |
+| Every pinned result stayed identical (unsorted layout vs. daily-sorted-by-instrument) | **0 mismatches of 30** | yes |
+
+```
+Pinned analytic outputs: 30
+Outputs recomputed after the storage re-layout: 30
+Mismatches: 0
+Every pinned result stayed identical: True
+```
+
+**The pair that matters here is the same shape as the trading-compliance project's: a gate that
+always reports "identical" because it is not actually comparing anything would also score 30 of
+30.** `test_regression_gate_detects_a_real_mismatch` is the check that a deliberately tampered
+value is caught, not only that the clean run passes; without it, 0 mismatches on the real run
+would be unfalsifiable. Average slippage across the 30 pinned outputs is on the order of a cent
+on a ~$20-40 instrument (see Findings for the bug this caught before the fix), which is the honest
+scale for execution noise against a prevailing quote, not the multi-point drift an earlier,
+buggier version of the fixture produced.
+
+Raw output: `docs/asof_regression_gate_output.txt`, the exact command that produced it is below.
+
 ## Building and running
 
 ```bash
@@ -207,11 +317,16 @@ venv\Scripts\python.exe -m pytest tests -v
 
 venv\Scripts\python.exe scripts\generate_data.py              # writes data/layouts/ (tens of GB)
 venv\Scripts\python.exe scripts\run_benchmark.py > docs\benchmark_output.txt
+
+venv\Scripts\python.exe scripts\run_asof_regression_gate.py > docs\asof_regression_gate_output.txt
 ```
 
 `data/layouts/` is gitignored (tens of GB, far over this repository's size budget); regenerate it
 with `generate_data.py` above. It takes on the order of an hour on this machine and needs roughly
-60 GB of free disk for all 4 layouts at once.
+60 GB of free disk for all 4 layouts at once. `data/asof_fixture/` is also gitignored but is cheap
+to regenerate (a few seconds, well under 1 GB); `run_asof_regression_gate.py` rebuilds it
+automatically and will not overwrite an existing pinned snapshot at
+`tickpanel/regression/pinned_asof_outputs.json`, which is committed.
 
 ## Limitations
 
@@ -227,3 +342,12 @@ a less selective query would show a smaller relative gap between layouts. The 4 
 for polars streaming is a measured peak, not a configured hard limit, since polars' public
 streaming API does not expose one. "Scan footprint" is DuckDB's own profiler output and has not
 been independently cross-validated against a second, unrelated method of counting bytes read.
+
+The as-of join fixture is a separate, much smaller panel (20 instruments, 5 days) than the
+flagship 1.2B-row one; the regression gate's 9.0x/87%-style conclusions are specific to that small
+fixture's two layouts (unsorted and daily-sorted-by-instrument) and are not themselves a repeat of
+the main query-speed benchmark. The gate pins outputs from one DuckDB version and machine; it does
+not claim the same 30 values would reproduce bit-for-bit on a different DuckDB version or OS, only
+that they stay identical across the one storage change this project makes. The pin itself is a
+single committed JSON file with no versioning over time; a real regression-gate service would need
+to track which pin is current and when it was last updated and approved.

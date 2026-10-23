@@ -7,4 +7,8 @@ pytest_run.log
 # Regenerate with: python scripts/generate_data.py
 # (writes data/layouts/, the 1.2B-row panel in 4 layouts, tens of GB)
 data/layouts/
+
+# Regenerate with: python scripts/run_asof_regression_gate.py
+# (writes data/asof_fixture/, the small trades+quotes fixture, well under 1 GB)
+data/asof_fixture/
 build_log.txt
